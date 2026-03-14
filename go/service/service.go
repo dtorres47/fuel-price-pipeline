@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"fuel-downloader/domain"
@@ -18,18 +19,31 @@ type FuelRate = domain.FuelRate
 type EIAResponse = domain.EIAResponse
 
 type FuelService struct {
-	repo domain.Repository // interface, not concrete type
+	repo   domain.Repository
+	apiKey string
 }
 
-func NewFuelService(repo domain.Repository) *FuelService {
-	return &FuelService{repo: repo}
+// GetAll delegates to the repo.
+func (s *FuelService) GetAll(ctx context.Context) ([]FuelRate, error) {
+	return s.repo.GetAll(ctx)
+}
+
+// Save delegates to the repo.
+func (s *FuelService) Save(ctx context.Context, fuelRates []FuelRate) error {
+	return s.repo.Save(ctx, fuelRates)
+}
+
+func NewFuelService(repo domain.Repository, apiKey string) *FuelService {
+	return &FuelService{
+		repo:   repo,
+		apiKey: apiKey,
+	}
 }
 
 // GetFromEIA Gets diesel fuel prices from EIA API.
-// TODO: remove apiKey param
-func (s *FuelService) GetFromEIA(apiKey string) ([]FuelRate, error) {
+func (s *FuelService) GetFromEIA() ([]FuelRate, error) {
 
-	url := fmt.Sprintf(eiaUrl, apiKey)
+	url := fmt.Sprintf(eiaUrl, s.apiKey)
 
 	// Make HTTP request
 	resp, err := http.Get(url)

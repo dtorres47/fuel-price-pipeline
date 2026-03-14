@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"fuel-downloader/adapters"
+	"fuel-downloader/ports"
 	"fuel-downloader/service"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -26,18 +29,19 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	fuelService := service.NewFuelService(postgresRepo)
+	fuelService := service.NewFuelService(postgresRepo, apiKey)
+	server := ports.NewHttpServer(fuelService)
 	ctx := context.Background()
 
-	// TODO: refactor http methods to use chi router
-	//router := chi.NewRouter()
-	//router.Use(middleware.Logger)
-	//router.Use(httprate.LimitByIP(10, time.Minute))
-	// router.Get("/", func(w http.ResponseWriter, r *http.Request) {})
+	// Setup Chi router
+	r := chi.NewRouter()
+	r.Get("/getEIAData", server.GetEIADataHandler)
+	r.Get("/getAll", server.GetAllHandler)
+	r.Post("/save/", server.SaveHandler)
 
 	// Get latest fuel rates from EIA
 	fmt.Println("Downloading fuel rates from EIA API...")
-	fuelRates, err := fuelService.GetFromEIA(apiKey)
+	fuelRates, err := fuelService.GetFromEIA()
 	if err != nil {
 		log.Fatal("Failed to get fuel rates:", err)
 	}

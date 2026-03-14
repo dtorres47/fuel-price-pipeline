@@ -59,6 +59,7 @@ func (r *PostgresRepository) GetAll(ctx context.Context) ([]FuelRate, error) {
 
 	return fuelRates, nil
 }
+
 func (r *PostgresRepository) Save(ctx context.Context, fuelRates []domain.FuelRate) error {
 	sqlQuery := `
 		INSERT INTO eia.fuel_rate 
