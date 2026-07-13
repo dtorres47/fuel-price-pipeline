@@ -2,8 +2,8 @@ package ports
 
 import (
 	"encoding/json"
-	"fuel-downloader/domain"
-	"fuel-downloader/service"
+	"fuel-price-pipeline/domain"
+	"fuel-price-pipeline/service"
 	"io"
 	"log"
 	"net/http"
@@ -37,7 +37,7 @@ func (s *HttpServer) GetEIADataHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetAllHandler returns all fuel rates from the database
 func (s *HttpServer) GetAllHandler(w http.ResponseWriter, r *http.Request) {
-	fuelRates, err := s.fuelService.GetFromEIA()
+	fuelRates, err := s.fuelService.GetAll(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

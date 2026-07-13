@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
-	"fuel-downloader/domain"
+	"fuel-price-pipeline/domain"
 	"os"
 )
 
@@ -15,7 +15,7 @@ func ExportToCSV(r *PostgresRepository, filename string) error {
 	// Query all fuel rates from database
 	sqlQuery := `
 		SELECT product_code, area_code, period, value, unit, product_name, area_name, created_at
-		FROM eia.fuel_rate
+		FROM fuel_price.diesel_fuel_price
 		ORDER BY period DESC
 	`
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"fuel-downloader/domain"
+	"fuel-price-pipeline/domain"
 	"io"
 	"net/http"
 	"strconv"

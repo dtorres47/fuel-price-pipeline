@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"fuel-downloader/adapters"
-	"fuel-downloader/ports"
-	"fuel-downloader/service"
+	"fuel-price-pipeline/adapters"
+	"fuel-price-pipeline/ports"
+	"fuel-price-pipeline/service"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -21,8 +22,8 @@ func main() {
 	if apiKey == "" {
 		log.Fatal("EIA_API_KEY environment variable not set. Exiting now...")
 	}
-	connString := "postgresql://postgres:postgres@localhost:5432/fuel_downloader"
-	csvFilename := "fuel_rates.csv"
+	connString := "postgresql://postgres:postgres@localhost:5432/fuel_price"
+	csvFilename := "diesel_fuel_prices.csv"
 
 	postgresRepo, err := adapters.NewPostgresRepository(connString)
 	if err != nil {
@@ -33,37 +34,35 @@ func main() {
 	server := ports.NewHttpServer(fuelService)
 	ctx := context.Background()
 
-	// Setup Chi router
-	r := chi.NewRouter()
-	r.Get("/getEIAData", server.GetEIADataHandler)
-	r.Get("/getAll", server.GetAllHandler)
-	r.Post("/save/", server.SaveHandler)
-
-	// Get latest fuel rates from EIA
+	// Run the pipeline once on startup: fetch from EIA, persist, export CSV.
 	fmt.Println("Downloading fuel rates from EIA API...")
 	fuelRates, err := fuelService.GetFromEIA()
 	if err != nil {
 		log.Fatal("Failed to get fuel rates:", err)
 	}
-
 	fmt.Printf("Downloaded %d fuel rates\n", len(fuelRates))
 
-	// Save to database
 	fmt.Println("Saving to database...")
-	err = postgresRepo.Save(ctx, fuelRates)
-	if err != nil {
+	if err := postgresRepo.Save(ctx, fuelRates); err != nil {
 		log.Fatal("Failed to save fuel rates:", err)
 	}
-
 	fmt.Println("Saved to database successfully")
 
-	// Export to CSV
 	fmt.Println("Exporting to CSV...")
-	err = adapters.ExportToCSV(postgresRepo, csvFilename)
-	if err != nil {
+	if err := adapters.ExportToCSV(postgresRepo, csvFilename); err != nil {
 		log.Fatal("Failed to export CSV:", err)
 	}
 	fmt.Printf("Exported to %s successfully\n", csvFilename)
 
-	fmt.Println("Complete!")
+	// Setup Chi router and serve the API.
+	r := chi.NewRouter()
+	r.Get("/getEIAData", server.GetEIADataHandler)
+	r.Get("/getAll", server.GetAllHandler)
+	r.Post("/save", server.SaveHandler)
+
+	addr := ":8080"
+	fmt.Printf("Serving API on %s\n", addr)
+	if err := http.ListenAndServe(addr, r); err != nil {
+		log.Fatal("Server failed:", err)
+	}
 }

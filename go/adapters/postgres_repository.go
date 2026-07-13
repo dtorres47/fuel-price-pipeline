@@ -3,7 +3,7 @@ package adapters
 import (
 	"context"
 	"fmt"
-	"fuel-downloader/domain"
+	"fuel-price-pipeline/domain"
 	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -36,7 +36,7 @@ func NewPostgresRepository(connString string) (*PostgresRepository, error) {
 func (r *PostgresRepository) GetAll(ctx context.Context) ([]FuelRate, error) {
 	sqlQuery := `
 		SELECT product_code, area_code, period, value, unit, product_name, area_name, created_at
-		FROM eia.fuel_rate
+		FROM fuel_price.diesel_fuel_price
 		ORDER BY period DESC
 	`
 
@@ -62,7 +62,7 @@ func (r *PostgresRepository) GetAll(ctx context.Context) ([]FuelRate, error) {
 
 func (r *PostgresRepository) Save(ctx context.Context, fuelRates []domain.FuelRate) error {
 	sqlQuery := `
-		INSERT INTO eia.fuel_rate 
+		INSERT INTO fuel_price.diesel_fuel_price 
 		(product_code, area_code, period, value, unit, product_name, area_name, raw)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, '{}'::jsonb)
 		ON CONFLICT (product_code, area_code, period)
