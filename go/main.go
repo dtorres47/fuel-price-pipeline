@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 func main() {
@@ -58,6 +59,18 @@ func main() {
 
 	// Setup Chi router and serve the API.
 	r := chi.NewRouter()
+
+	// CORS: allow the Angular dev server (override with CORS_ORIGIN).
+	corsOrigin := strings.TrimSpace(os.Getenv("CORS_ORIGIN"))
+	if corsOrigin == "" {
+		corsOrigin = "http://localhost:4200"
+	}
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{corsOrigin},
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type"},
+	}))
+
 	r.Get("/getEIAData", server.GetEIADataHandler)
 	r.Get("/getAll", server.GetAllHandler)
 	r.Post("/save", server.SaveHandler)
