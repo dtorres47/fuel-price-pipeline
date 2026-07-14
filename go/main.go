@@ -16,13 +16,15 @@ import (
 
 func main() {
 
-	// Configuration
-	// TODO: add this to a config
+	// Configuration (from environment; see .env.example)
 	apiKey := strings.TrimSpace(os.Getenv("EIA_API_KEY"))
 	if apiKey == "" {
 		log.Fatal("EIA_API_KEY environment variable not set. Exiting now...")
 	}
-	connString := "postgresql://postgres:postgres@localhost:5432/fuel_price"
+	connString := strings.TrimSpace(os.Getenv("FUEL_DSN"))
+	if connString == "" {
+		log.Fatal("FUEL_DSN environment variable not set. Exiting now...")
+	}
 	csvFilename := "diesel_fuel_prices.csv"
 
 	postgresRepo, err := adapters.NewPostgresRepository(connString)
@@ -60,7 +62,10 @@ func main() {
 	r.Get("/getAll", server.GetAllHandler)
 	r.Post("/save", server.SaveHandler)
 
-	addr := ":8080"
+	addr := strings.TrimSpace(os.Getenv("API_ADDR"))
+	if addr == "" {
+		addr = ":8080"
+	}
 	fmt.Printf("Serving API on %s\n", addr)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		log.Fatal("Server failed:", err)
