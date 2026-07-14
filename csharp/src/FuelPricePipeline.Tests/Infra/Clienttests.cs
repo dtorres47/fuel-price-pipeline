@@ -14,7 +14,7 @@ public class ClientTests
         var mockLogger = new Mock<ILogger<Client>>();
         var client = new Client("test-key", mockFactory.Object, mockLogger.Object);
 
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsAsync<ArgumentException>(
             async () => await client.FetchLatestDieselAsync("INVALID"));
     }
 
