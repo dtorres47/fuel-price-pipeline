@@ -8,7 +8,7 @@ See the [root README](../../README.md) for the project overview.
 
 ```
 src/app/
-├── domain/                    # FuelRate interface
+├── domain/                    # DieselFuelPrice interface
 ├── infra/fuel.service.ts      # data source (currently mocked)
 ├── usecase/get-latest.service.ts  # wraps the source in a signal
 └── components/fuel-table/     # displays the latest rate

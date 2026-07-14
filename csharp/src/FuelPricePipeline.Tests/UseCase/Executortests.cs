@@ -27,7 +27,7 @@ public class ExecutorTests
     public async Task ExecuteAsync_WhenClientReturnsData_ShouldReturnSuccess()
     {
         // Arrange
-        var expectedFuelRate = new DieselFuelPrice
+        var expectedPrice = new DieselFuelPrice
         {
             ProductCode = "EPD2D",
             ProductName = "No 2 Diesel",
@@ -39,7 +39,7 @@ public class ExecutorTests
         };
 
         _mockClient.Setup(c => c.FetchLatestDieselAsync(It.IsAny<string>()))
-            .ReturnsAsync(expectedFuelRate);
+            .ReturnsAsync(expectedPrice);
 
         // Act
         var result = await _executor.ExecuteAsync("test.csv", "NUS");
