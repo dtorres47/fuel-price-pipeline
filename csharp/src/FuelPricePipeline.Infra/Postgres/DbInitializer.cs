@@ -16,7 +16,7 @@ namespace FuelPricePipeline.Infra.Postgres
 
                 // Create schema if it doesn't exist
                 await using (var cmd = new NpgsqlCommand(@"
-                    CREATE SCHEMA IF NOT EXISTS eia;
+                    CREATE SCHEMA IF NOT EXISTS fuel_price;
                 ", conn))
                 {
                     await cmd.ExecuteNonQueryAsync();
@@ -24,7 +24,7 @@ namespace FuelPricePipeline.Infra.Postgres
 
                 // Create table if it doesn't exist
                 await using (var cmd = new NpgsqlCommand(@"
-                    CREATE TABLE IF NOT EXISTS eia.fuel_price (
+                    CREATE TABLE IF NOT EXISTS fuel_price.diesel_fuel_price (
                         id BIGSERIAL PRIMARY KEY,
                         product_code TEXT NOT NULL,
                         area_code TEXT NOT NULL,
@@ -36,7 +36,7 @@ namespace FuelPricePipeline.Infra.Postgres
                         raw JSONB DEFAULT '{}'::jsonb,
                         created_at TIMESTAMPTZ DEFAULT NOW(),
                         updated_at TIMESTAMPTZ DEFAULT NOW(),
-                        CONSTRAINT uq_fuel_price_product_area_period 
+                        CONSTRAINT uq_diesel_fuel_price_product_area_period 
                             UNIQUE (product_code, area_code, period)
                     );
                 ", conn))
@@ -46,11 +46,11 @@ namespace FuelPricePipeline.Infra.Postgres
 
                 // Create indexes
                 await using (var cmd = new NpgsqlCommand(@"
-                    CREATE INDEX IF NOT EXISTS idx_fuel_price_lookup 
-                    ON eia.fuel_price(product_code, area_code, period DESC);
+                    CREATE INDEX IF NOT EXISTS idx_diesel_fuel_price_lookup 
+                    ON fuel_price.diesel_fuel_price(product_code, area_code, period DESC);
 
-                    CREATE INDEX IF NOT EXISTS idx_fuel_price_period 
-                    ON eia.fuel_price(period DESC);
+                    CREATE INDEX IF NOT EXISTS idx_diesel_fuel_price_period 
+                    ON fuel_price.diesel_fuel_price(period DESC);
                 ", conn))
                 {
                     await cmd.ExecuteNonQueryAsync();

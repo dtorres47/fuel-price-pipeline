@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "fuel-downloader-ui": {
+    "fuel-price-pipeline-ui": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -56,10 +56,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "fuel-downloader-ui:build:production"
+              "buildTarget": "fuel-price-pipeline-ui:build:production"
             },
             "development": {
-              "buildTarget": "fuel-downloader-ui:build:development"
+              "buildTarget": "fuel-price-pipeline-ui:build:development"
             }
           },
           "defaultConfiguration": "development"

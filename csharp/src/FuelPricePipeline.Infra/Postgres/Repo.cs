@@ -27,7 +27,7 @@ public class Repo
             await conn.OpenAsync();
 
             const string sql = @"
-                INSERT INTO eia.fuel_price
+                INSERT INTO fuel_price.diesel_fuel_price
                     (product_code, area_code, period, value, unit, product_name, area_name, raw)
                 VALUES
                     (@ProductCode, @AreaCode, @Period, @Value, @Unit, @ProductName, @AreaName, '{}'::jsonb)
