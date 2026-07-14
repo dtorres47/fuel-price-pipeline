@@ -1,4 +1,4 @@
-<div *ngIf="fuelRate() as rate; else loading">
+@if (fuelRate(); as rate) {
   <table>
     <tr><th>Product</th><td>{{ rate.productName }}</td></tr>
     <tr><th>Area</th><td>{{ rate.areaName }}</td></tr>
@@ -6,8 +6,6 @@
     <tr><th>Value</th><td>{{ rate.value }} {{ rate.unit }}</td></tr>
   </table>
   <button (click)="refresh()">Refresh</button>
-</div>
-
-<ng-template #loading>
-  Loading fuel price...
-</ng-template>
+} @else {
+  <p>Loading fuel price…</p>
+}

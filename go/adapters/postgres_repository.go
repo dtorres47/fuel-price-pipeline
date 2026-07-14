@@ -9,9 +9,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type FuelRate = domain.FuelRate
-type EIAResponse = domain.EIAResponse
-
 type PostgresRepository struct {
 	Pool *pgxpool.Pool
 }
@@ -33,7 +30,7 @@ func NewPostgresRepository(connString string) (*PostgresRepository, error) {
 	return &PostgresRepository{Pool: pool}, nil
 }
 
-func (r *PostgresRepository) GetAll(ctx context.Context) ([]FuelRate, error) {
+func (r *PostgresRepository) GetAll(ctx context.Context) ([]domain.DieselFuelPrice, error) {
 	sqlQuery := `
 		SELECT product_code, area_code, period, value, unit, product_name, area_name, created_at
 		FROM fuel_price.diesel_fuel_price
@@ -46,11 +43,11 @@ func (r *PostgresRepository) GetAll(ctx context.Context) ([]FuelRate, error) {
 	}
 	defer rows.Close()
 
-	var fuelRates []FuelRate
+	var fuelRates []domain.DieselFuelPrice
 	for rows.Next() {
-		var fr FuelRate
-		err := rows.Scan(&fr.Product, &fr.AreaCode, &fr.Period, &fr.Value,
-			&fr.Units, &fr.ProductName, &fr.AreaName, &fr.CreatedAt)
+		var fr domain.DieselFuelPrice
+		err := rows.Scan(&fr.ProductCode, &fr.AreaCode, &fr.Period, &fr.Value,
+			&fr.Unit, &fr.ProductName, &fr.AreaName, &fr.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
@@ -60,7 +57,7 @@ func (r *PostgresRepository) GetAll(ctx context.Context) ([]FuelRate, error) {
 	return fuelRates, nil
 }
 
-func (r *PostgresRepository) Save(ctx context.Context, fuelRates []domain.FuelRate) error {
+func (r *PostgresRepository) Save(ctx context.Context, fuelRates []domain.DieselFuelPrice) error {
 	sqlQuery := `
 		INSERT INTO fuel_price.diesel_fuel_price 
 		(product_code, area_code, period, value, unit, product_name, area_name, raw)
@@ -76,7 +73,7 @@ func (r *PostgresRepository) Save(ctx context.Context, fuelRates []domain.FuelRa
 
 	for _, fr := range fuelRates {
 		_, err := r.Pool.Exec(ctx, sqlQuery,
-			fr.Product, fr.AreaCode, fr.Period, fr.Value, fr.Units,
+			fr.ProductCode, fr.AreaCode, fr.Period, fr.Value, fr.Unit,
 			fr.ProductName, fr.AreaName)
 		if err != nil {
 			return fmt.Errorf("failed to insert fuel rate: %w", err)

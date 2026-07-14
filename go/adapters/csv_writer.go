@@ -37,29 +37,29 @@ func ExportToCSV(r *PostgresRepository, filename string) error {
 	defer writer.Flush()
 
 	// Write header row
-	header := []string{"Product", "Product Name", "Duo Area", "Area Name", "Period", "Value", "Units", "Created At"}
+	header := []string{"Product Code", "Product Name", "Area Code", "Area Name", "Period", "Value", "Units", "Created At"}
 	if err := writer.Write(header); err != nil {
 		return fmt.Errorf("failed to write CSV header: %w", err)
 	}
 
 	// Write data rows
 	for rows.Next() {
-		var fr domain.FuelRate
-		err := rows.Scan(&fr.Product, &fr.ProductName, &fr.AreaCode, &fr.AreaName,
-			&fr.Period, &fr.Value, &fr.Units, &fr.CreatedAt)
+		var fr domain.DieselFuelPrice
+		err := rows.Scan(&fr.ProductCode, &fr.AreaCode, &fr.Period, &fr.Value,
+			&fr.Unit, &fr.ProductName, &fr.AreaName, &fr.CreatedAt)
 		if err != nil {
 			return fmt.Errorf("failed to scan row: %w", err)
 		}
 
 		// Convert to string slice for CSV
 		record := []string{
-			fr.Product,
+			fr.ProductCode,
 			fr.ProductName,
 			fr.AreaCode,
 			fr.AreaName,
 			fr.Period.Format("2006-01-02"),
 			fmt.Sprintf("%.4f", fr.Value),
-			fr.Units,
+			fr.Unit,
 			fr.CreatedAt.Format("2006-01-02 15:04:05"),
 		}
 

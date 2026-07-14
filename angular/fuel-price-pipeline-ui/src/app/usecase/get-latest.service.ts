@@ -1,12 +1,12 @@
 import { Injectable, signal } from '@angular/core';
-import { FuelRate } from '../domain/fuel-rate';
+import { DieselFuelPrice } from '../domain/diesel-fuel-price';
 import { FuelService } from '../infra/fuel.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GetLatestService {
-  latestRate = signal<FuelRate | null>(null);
+  latestRate = signal<DieselFuelPrice | null>(null);
 
   constructor(private fuelService: FuelService) {}
 

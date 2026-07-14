@@ -5,6 +5,6 @@ import (
 )
 
 type Repository interface {
-	GetAll(ctx context.Context) ([]FuelRate, error)
-	Save(ctx context.Context, fuelRates []FuelRate) error
+	GetAll(ctx context.Context) ([]DieselFuelPrice, error)
+	Save(ctx context.Context, fuelRates []DieselFuelPrice) error
 }

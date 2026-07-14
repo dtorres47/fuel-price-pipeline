@@ -67,7 +67,7 @@ func (s *HttpServer) SaveHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}(r.Body)
 
-	var fuelRates []domain.FuelRate
+	var fuelRates []domain.DieselFuelPrice
 
 	if err := json.Unmarshal(body, &fuelRates); err != nil {
 		log.Println("Failed to unmarshal payload:", err)

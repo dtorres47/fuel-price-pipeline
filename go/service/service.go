@@ -15,7 +15,6 @@ import (
 // TODO: move this to config
 var eiaUrl = "https://api.eia.gov/v2/petroleum/pri/gnd/data/?api_key=%s&frequency=weekly&data[0]=value&sort[0][column]=period&sort[0][direction]=desc&offset=0&length=10"
 
-type FuelRate = domain.FuelRate
 type EIAResponse = domain.EIAResponse
 
 type FuelService struct {
@@ -24,12 +23,12 @@ type FuelService struct {
 }
 
 // GetAll delegates to the repo.
-func (s *FuelService) GetAll(ctx context.Context) ([]FuelRate, error) {
+func (s *FuelService) GetAll(ctx context.Context) ([]domain.DieselFuelPrice, error) {
 	return s.repo.GetAll(ctx)
 }
 
 // Save delegates to the repo.
-func (s *FuelService) Save(ctx context.Context, fuelRates []FuelRate) error {
+func (s *FuelService) Save(ctx context.Context, fuelRates []domain.DieselFuelPrice) error {
 	return s.repo.Save(ctx, fuelRates)
 }
 
@@ -41,7 +40,7 @@ func NewFuelService(repo domain.Repository, apiKey string) *FuelService {
 }
 
 // GetFromEIA Gets diesel fuel prices from EIA API.
-func (s *FuelService) GetFromEIA() ([]FuelRate, error) {
+func (s *FuelService) GetFromEIA() ([]domain.DieselFuelPrice, error) {
 
 	url := fmt.Sprintf(eiaUrl, s.apiKey)
 
@@ -70,8 +69,8 @@ func (s *FuelService) GetFromEIA() ([]FuelRate, error) {
 		return nil, fmt.Errorf("failed to parse JSON: %w", err)
 	}
 
-	// Convert to FuelRate structs
-	var fuelRates []FuelRate
+	// Convert to DieselFuelPrice structs
+	var fuelRates []domain.DieselFuelPrice
 	for _, item := range eiaResp.Response.Data {
 		// Parse period string (format: "YYYY-MM-DD")
 		period, err := time.Parse("2006-01-02", item.Period)
@@ -85,14 +84,14 @@ func (s *FuelService) GetFromEIA() ([]FuelRate, error) {
 			continue // Skip invalid values
 		}
 
-		fuelRate := FuelRate{
-			Product:     item.Product,
+		fuelRate := domain.DieselFuelPrice{
+			ProductCode: item.Product,
 			ProductName: item.ProductName,
 			AreaCode:    item.DuoArea,
 			AreaName:    item.AreaName,
 			Period:      period,
 			Value:       value,
-			Units:       item.Units,
+			Unit:        item.Units,
 		}
 		fuelRates = append(fuelRates, fuelRate)
 	}

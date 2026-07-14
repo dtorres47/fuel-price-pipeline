@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { of, delay, Observable } from 'rxjs';
-import { FuelRate } from '../domain/fuel-rate';
+import { DieselFuelPrice } from '../domain/diesel-fuel-price';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FuelService {
-  getLatest(area: string = 'NUS'): Observable<FuelRate> {
-    const mock: FuelRate = {
+  getLatest(area: string = 'NUS'): Observable<DieselFuelPrice> {
+    const mock: DieselFuelPrice = {
       productCode: 'EPD2D',
       productName: 'No 2 Diesel',
       areaCode: 'NUS',
