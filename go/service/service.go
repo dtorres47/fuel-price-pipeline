@@ -15,6 +15,8 @@ import (
 // TODO: move this to config
 var eiaUrl = "https://api.eia.gov/v2/petroleum/pri/gnd/data/?api_key=%s&frequency=weekly&data[0]=value&sort[0][column]=period&sort[0][direction]=desc&offset=0&length=10"
 
+var httpClient = &http.Client{Timeout: 15 * time.Second}
+
 type EIAResponse = domain.EIAResponse
 
 type FuelService struct {
@@ -45,7 +47,7 @@ func (s *FuelService) GetFromEIA() ([]domain.DieselFuelPrice, error) {
 	url := fmt.Sprintf(eiaUrl, s.apiKey)
 
 	// Make HTTP request
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch from EIA: %w", err)
 	}
@@ -95,6 +97,5 @@ func (s *FuelService) GetFromEIA() ([]domain.DieselFuelPrice, error) {
 		}
 		fuelRates = append(fuelRates, fuelRate)
 	}
-
 	return fuelRates, nil
 }

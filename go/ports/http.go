@@ -57,22 +57,13 @@ func (s *HttpServer) SaveHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "could not read body", http.StatusInternalServerError)
 		return
 	}
-
-	defer r.Body.Close()
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Println("Failed to close body:", err)
-		}
-	}(r.Body)
+	defer func() { _ = r.Body.Close() }()
 
 	var fuelRates []domain.DieselFuelPrice
 
 	if err := json.Unmarshal(body, &fuelRates); err != nil {
 		log.Println("Failed to unmarshal payload:", err)
-		w.WriteHeader(http.StatusBadRequest)
-		http.Error(w, "could not unmarshal payload", http.StatusInternalServerError)
+		http.Error(w, "could not unmarshal payload", http.StatusBadRequest)
 		return
 	}
 
