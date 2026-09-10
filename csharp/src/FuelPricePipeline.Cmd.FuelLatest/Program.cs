@@ -32,12 +32,12 @@ class Program
                 });
 
                 // Register infrastructure services
-                services.AddSingleton(sp => new Client(
+                services.AddSingleton<IEiaClient>(sp => new Client(
                     apiKey,
                     sp.GetRequiredService<IHttpClientFactory>(),
                     sp.GetRequiredService<ILogger<Client>>()));
 
-                services.AddSingleton(new Repo(dsn));
+                services.AddSingleton<IFuelRepository>(new Repo(dsn));
 
                 // Register use case
                 services.AddTransient<Executor>();
@@ -57,7 +57,7 @@ class Program
         var outputPath = Environment.GetEnvironmentVariable("FUEL_OUT") ?? "fuel-latest.csv";
         var area = Environment.GetEnvironmentVariable("FUEL_AREA") ?? "NUS";
 
-        logger.LogInformation("Starting fuel downloader for area {Area}", area);
+        logger.LogInformation("Starting fuel price pipeline for area {Area}", area);
 
         var result = await executor.ExecuteAsync(outputPath, area);
 

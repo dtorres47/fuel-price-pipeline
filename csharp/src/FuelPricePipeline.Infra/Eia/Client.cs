@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace FuelPricePipeline.Infra.Eia
 {
-    public class Client
+    public class Client : IEiaClient
     {
         private readonly string _apiKey;
         private readonly HttpClient _httpClient;

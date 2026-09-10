@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging;
 
 public class Executor
 {
-    private readonly Client _client;
-    private readonly Repo _repo;
+    private readonly IEiaClient _client;
+    private readonly IFuelRepository _repo;
     private readonly ILogger<Executor> _logger;
 
-    public Executor(Client client, Repo repo, ILogger<Executor> logger)
+    public Executor(IEiaClient client, IFuelRepository repo, ILogger<Executor> logger)
     {
         _client = client;
         _repo = repo;

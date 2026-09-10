@@ -5,7 +5,7 @@ using Npgsql;
 using Polly;
 using Dapper;
 
-public class Repo
+public class Repo : IFuelRepository
 {
     private readonly string _connectionString;
     private readonly IAsyncPolicy _retryPolicy;

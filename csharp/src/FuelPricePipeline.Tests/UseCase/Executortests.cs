@@ -9,16 +9,16 @@ namespace FuelPricePipeline.Tests.UseCase;
 [TestClass]
 public class ExecutorTests
 {
-    private Mock<Client> _mockClient = null!;
-    private Mock<Repo> _mockRepo = null!;
+    private Mock<IEiaClient> _mockClient = null!;
+    private Mock<IFuelRepository> _mockRepo = null!;
     private Mock<Microsoft.Extensions.Logging.ILogger<Executor>> _mockLogger = null!;
     private Executor _executor = null!;
 
     [TestInitialize]
     public void Setup()
     {
-        _mockClient = new Mock<Client>();
-        _mockRepo = new Mock<Repo>();
+        _mockClient = new Mock<IEiaClient>();
+        _mockRepo = new Mock<IFuelRepository>();
         _mockLogger = new Mock<Microsoft.Extensions.Logging.ILogger<Executor>>();
         _executor = new Executor(_mockClient.Object, _mockRepo.Object, _mockLogger.Object);
     }
