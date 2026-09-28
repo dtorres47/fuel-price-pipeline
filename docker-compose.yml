@@ -1,0 +1,33 @@
+services:
+  # PostgreSQL — schema fuel_price, table diesel_fuel_price
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fuel_price
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fuel_price"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Adminer — web UI for the database at http://localhost:3333
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DESIGN: dracula
+    ports:
+      - "3333:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
