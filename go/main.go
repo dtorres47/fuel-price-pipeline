@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"fuel-price-pipeline/adapters"
 	"fuel-price-pipeline/ports"
@@ -17,6 +18,12 @@ import (
 )
 
 func main() {
+
+	// -serve-only skips the startup pipeline run (EIA download, DB save,
+	// CSV export) and goes straight to serving the API. Useful for local
+	// testing when you don't want to hit EIA on every restart.
+	serveOnly := flag.Bool("serve-only", false, "skip the startup EIA download/save/CSV export; just serve the API")
+	flag.Parse()
 
 	// Configuration (from environment; see .env.example)
 	apiKey := strings.TrimSpace(os.Getenv("EIA_API_KEY"))
@@ -39,24 +46,29 @@ func main() {
 	ctx := context.Background()
 
 	// Run the pipeline once on startup: fetch from EIA, persist, export CSV.
-	fmt.Println("Downloading fuel rates from EIA API...")
-	fuelRates, err := fuelService.GetFromEIA()
-	if err != nil {
-		log.Fatal("Failed to get fuel rates:", err)
-	}
-	fmt.Printf("Downloaded %d fuel rates\n", len(fuelRates))
+	// Skipped with -serve-only.
+	if *serveOnly {
+		fmt.Println("Serve-only mode: skipping EIA download, DB save, and CSV export")
+	} else {
+		fmt.Println("Downloading fuel rates from EIA API...")
+		fuelRates, err := fuelService.GetFromEIA()
+		if err != nil {
+			log.Fatal("Failed to get fuel rates:", err)
+		}
+		fmt.Printf("Downloaded %d fuel rates\n", len(fuelRates))
 
-	fmt.Println("Saving to database...")
-	if err := postgresRepo.Save(ctx, fuelRates); err != nil {
-		log.Fatal("Failed to save fuel rates:", err)
-	}
-	fmt.Println("Saved to database successfully")
+		fmt.Println("Saving to database...")
+		if err := postgresRepo.Save(ctx, fuelRates); err != nil {
+			log.Fatal("Failed to save fuel rates:", err)
+		}
+		fmt.Println("Saved to database successfully")
 
-	fmt.Println("Exporting to CSV...")
-	if err := adapters.ExportToCSV(postgresRepo, csvFilename); err != nil {
-		log.Fatal("Failed to export CSV:", err)
+		fmt.Println("Exporting to CSV...")
+		if err := adapters.ExportToCSV(postgresRepo, csvFilename); err != nil {
+			log.Fatal("Failed to export CSV:", err)
+		}
+		fmt.Printf("Exported to %s successfully\n", csvFilename)
 	}
-	fmt.Printf("Exported to %s successfully\n", csvFilename)
 
 	// Setup Chi router and serve the API.
 	r := chi.NewRouter()
@@ -72,6 +84,17 @@ func main() {
 		AllowedHeaders: []string{"Content-Type"},
 	}))
 
+	// Health check: confirms the server is up and the DB is reachable,
+	// without touching EIA or any tables.
+	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		if err := postgresRepo.Pool.Ping(r.Context()); err != nil {
+			http.Error(w, "db unreachable: "+err.Error(), http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, "ok")
+	})
+
 	r.Get("/getEIAData", server.GetEIADataHandler)
 	r.Get("/getAll", server.GetAllHandler)
 	r.Post("/save", server.SaveHandler)
@@ -80,7 +103,7 @@ func main() {
 	if addr == "" {
 		addr = ":8080"
 	}
-	
+
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           r,
